@@ -104,12 +104,15 @@ function editar(req, res) {
     var id = req.params['id'];
     var img = req.params['img'];
 
-    if (req.files) {
+    if (req.files.imagen) {
 
-        // cuando se edita la img se elimina la anterior reemplazando con la nueva img
-        fs.unlink('./uploads/productos/' + img, (err) => {
-            if (err) throw err;
-        });
+        if (img || img != null || img != undefined) {
+            // cuando se edita la img se elimina la anterior reemplazando con la nueva img
+            fs.unlink('./uploads/productos/' + img, (err) => {
+                if (err) throw err;
+            });
+        }
+
 
         var imagen_path = req.files.imagen.path;
         var name = imagen_path.split('\\');
@@ -121,7 +124,6 @@ function editar(req, res) {
             imagen: imagen_name,
             precio_compra: params.precio_compra,
             precio_venta: params.precio_venta,
-            stock: params.stock,
             idcategoria: params.idcategoria,
             puntos: params.puntos
         }, (err, prodEdit) => {
@@ -143,7 +145,6 @@ function editar(req, res) {
             descripcion: params.descripcion,
             precio_compra: params.precio_compra,
             precio_venta: params.precio_venta,
-            stock: params.stock,
             idcategoria: params.idcategoria,
             puntos: params.puntos
         }, (err, prodEdit) => {
