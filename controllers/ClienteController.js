@@ -1,6 +1,51 @@
 var Cliente = require('../models/cliente');
 
 // *************************** 
+//     LISTAR CLIENTES
+// *************************** 
+
+function listar(req, res) {
+
+    Cliente.find((err, clienteListar) => {
+        if (err) {
+            res.status(500).send({ message: 'Error en el servidor' });
+        } else if (clienteListar) {
+            res.status(200).send({
+                clientes: clienteListar,
+                message: 'Listado de clientes'
+            });
+        } else {
+            res.status(403).send({ message: 'No existen clientes' });
+        }
+    });
+}
+
+// ******************************
+//     OBTENER CLIENTE POR ID
+// ******************************
+
+function get_cliente(req, res) {
+
+    var id = req.params['id'];
+
+    Cliente.findById(id, (err, clienteData) => {
+        if (err) {
+            res.status(500).send({ message: 'Error en el servidor' });
+        } else if (clienteData) {
+            res.status(200).send({
+                cliente: clienteData,
+                message: 'Registro de cliente por ID'
+            });
+        } else {
+            res.status(403).send({ message: 'no existe el cliente con el ID' });
+
+        }
+    });
+}
+
+
+
+// *************************** 
 //     REGISTRAR CLIENTE
 // *************************** 
 
@@ -11,6 +56,7 @@ function registrar(req, res) {
 
     cliente.nombres = params.nombres;
     cliente.correo = params.correo;
+    cliente.dni = params.dni;
     cliente.puntos = 10;
 
     cliente.save((err, clienteSave) => {
@@ -38,7 +84,7 @@ function editar(req, res) {
     var params = req.body;
     var id = req.params['id'];
 
-    Cliente.findByIdAndUpdate(id, { nombres: params.nombres, correo: params.correo }, (err, cliEdit) => {
+    Cliente.findByIdAndUpdate(id, { nombres: params.nombres, dni: params.dni, correo: params.correo }, (err, cliEdit) => {
         if (err) {
             res.status(500).send({ message: 'Error en el servidor' });
         } else if (cliEdit) {
@@ -80,6 +126,8 @@ module.exports = {
 
     registrar,
     editar,
-    eliminar
+    eliminar,
+    listar,
+    get_cliente
 
 };

@@ -4,6 +4,27 @@ var bcrypt = require('bcrypt-nodejs');
 var jwt = require('../helpers/jwt');
 
 // *************************** 
+//     LISTAR USUARIOs
+// *************************** 
+function listar(req, res) {
+
+    User.find((err, usersData) => {
+        if (err) {
+            res.status(500).send({ error: 'Error en el servidor' });
+        } else if (usersData) {
+            res.status(200).send({
+                usuarios: usersData,
+                message: 'Listado de usuarios'
+            });
+        }
+
+    });
+
+}
+
+
+
+// *************************** 
 //     REGISTRAR USUARIO
 // *************************** 
 
@@ -26,9 +47,9 @@ function registrar(req, res) {
                 user.save((err, user) => {
 
                     if (err) {
-                        res.status(500).send({ error: 'Error en el servidor Usuario/Registrar' });
+                        res.status(500).send({ error: 'Error en el servidor' });
                     } else {
-                        res.status(403).send({
+                        res.status(200).send({
                             user: user,
                             message: 'Usuario registrado'
                         });
@@ -54,7 +75,7 @@ function login(req, res) {
     User.findOne({ email: params.email }, (err, user) => {
 
         if (err) {
-            res.status(500).send({ message: 'Error en el servidor Usuario/Login' });
+            res.status(500).send({ message: 'Error en el servidor' });
         } else {
             if (user) {
                 bcrypt.compare(params.password, user.password, function(err, check) {
@@ -84,7 +105,79 @@ function login(req, res) {
 
 }
 
+// *************************** 
+//     EDITAR USUARIO
+// *************************** 
+
+function editar(req, res) {
+
+    var id = req.params['id'];
+    var params = req.body;
+
+    if (params.password) {
+
+        bcrypt.hash(params.password, null, null, function(err, hash) {
+
+            if (hash) {
+                User.findByIdAndUpdate(id, { nombres: params.nombres, password: hash, email: params.email, role: params.role },
+                    (err, userEdit) => {
+                        if (err) {
+                            res.status(500).send({ message: 'El usuario no se actualizó' });
+                        } else if (userEdit) {
+                            res.status(200).send({
+                                user: userEdit,
+                                message: 'El usuario se actualizó correctamente'
+                            });
+                        }
+                    });
+            }
+        });
+        // sino se manda la contraseña para editar entonces solo editara los demas campos y la contraseña se quedara como antes ...
+    } else {
+        User.findByIdAndUpdate(id, { nombres: params.nombres, email: params.email, role: params.role },
+            (err, userEdit) => {
+                if (err) {
+                    res.status(500).send({ message: 'El usuario no se actualizó' });
+                } else if (userEdit) {
+                    res.status(200).send({
+                        user: userEdit,
+                        message: 'El usuario se actualizó correctamente'
+                    });
+                }
+            });
+    }
+}
+
+// ***************************** 
+//     OBTENER USUARIO POR ID
+// ***************************** 
+
+function get_user(req, res) {
+
+    var id = req.params['id'];
+
+    User.findById(id, (err, userData) => {
+
+        if (userData) {
+            res.status(200).send({
+                user: userData,
+                message: 'Datos del usuario'
+            });
+        } else {
+            res.status(403).send({ message: 'No se encontro ningun registro' });
+        }
+
+    });
+
+
+
+
+}
+
 module.exports = {
     registrar,
     login,
+    listar,
+    editar,
+    get_user
 };

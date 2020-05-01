@@ -55,24 +55,27 @@ function registrar(req, res) {
 }
 
 
-// ********************************
-//     OBTENER DATOS DE UNA VENTA
-// ********************************
+// ****************************************
+//     OBTENER DATOS DE UNA VENTA POR ID
+// ****************************************
 
 function datos_venta(req, res) {
 
     var id = req.params['id'];
 
-    Venta.findById(id, (err, venta) => {
+    Venta.findById(id).populate('idcliente').populate('iduser').exec((err, ventaProd) => {
         if (err) {
             res.status(403).send({ message: 'No existe el Id con la venta requerida' });
-        } else if (venta) {
-            DetalleVenta.find({ venta: venta._id }, (err, detalle) => {
+        } else if (ventaProd) {
+
+            DetalleVenta.find({ venta: id }).populate('idproducto').exec((err, detalle) => {
                 if (detalle) {
                     res.status(200).send({
-                        venta: venta,
-                        detalles: detalle,
-                        message: 'Detalle de ventas'
+                        data: {
+                            venta: ventaProd,
+                            detalles: detalle,
+                            message: 'Detalle de ventas y detalle ventas'
+                        }
                     });
                 }
             });
@@ -80,8 +83,54 @@ function datos_venta(req, res) {
     });
 }
 
+// *************************** 
+//     LISTADO DE  VENTAS
+// *************************** 
+
+function listado_venta(req, res) {
+
+    Venta.find().populate('idcliente').populate('iduser').exec((err, dataVentas) => {
+        if (err) {
+            res.status(500).send({ message: 'Error en el servidor' });
+        } else if (dataVentas) {
+            res.status(200).send({
+                ventas: dataVentas,
+                message: 'Detalle de ventas'
+            });
+        } else {
+            res.status(403).send({ message: 'No existen registros en ventas' });
+        }
+    });
+
+}
+
+// *********************************
+//     LISTADO DE  VENTAS POR ID
+// ********************************* 
+
+function detalle_venta(req, res) {
+
+    var id = req.params['id'];
+
+    DetalleVenta.find({ venta: id }).populate('idproducto').exec((err, dataDetalle) => {
+        if (err) {
+            res.status(500).send({ message: 'Error en el servidor' });
+        } else if (dataDetalle) {
+            res.status(200).send({
+                detalles: dataDetalle,
+                message: 'Detalle de ventas'
+            });
+        } else {
+            res.status(403).send({ message: 'No existen registros en detalle ventas' });
+        }
+    });
+
+}
+
 module.exports = {
 
     registrar,
-    datos_venta
+    datos_venta,
+    listado_venta,
+    detalle_venta
 };
